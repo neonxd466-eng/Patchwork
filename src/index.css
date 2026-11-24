@@ -1,0 +1,267 @@
+@import "tailwindcss";
+
+:root,
+[data-theme="dark"] {
+  --bg: #06070c;
+  --surface: #0b0d15;
+  --surface-elevated: #111421;
+  --text: #e8ebf7;
+  --text-soft: rgba(232, 235, 247, 0.72);
+  --muted: rgba(232, 235, 247, 0.45);
+  --border-hairline: rgba(232, 235, 247, 0.09);
+  --tint-a: 0.1;
+  --tint-b: 0.03;
+  --tint: 0;
+  --edge: 0.55;
+  --glass-edge: rgba(255, 255, 255, calc(0.14 * var(--edge)));
+  --glass-rim: rgba(255, 255, 255, calc(0.32 * var(--edge)));
+  --glass-rim-low: rgba(255, 255, 255, calc(0.08 * var(--edge)));
+  --glass-glow: rgba(140, 170, 255, 0.07);
+  --glass-sheen: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --chip: rgba(255, 255, 255, 0.05);
+  --chip-hover: rgba(255, 255, 255, 0.12);
+  --chip-edge: rgba(255, 255, 255, 0.1);
+  --accent: #7aa2ff;
+  --thumb: rgba(255, 255, 255, 0.14);
+  --focus: rgba(122, 162, 255, 0.3);
+}
+
+@layer base {
+  html,
+  body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: "Fraunces", Georgia, Cambria, serif;
+    font-optical-sizing: auto;
+  }
+
+  code, pre, .font-mono {
+    font-family: "Geist Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
+  }
+}
+
+.font-canvas-mono {
+  font-family: "Geist Mono", ui-monospace, Menlo, monospace;
+}
+
+/* Liquid Glass Material (from Glyph Animals spec) */
+.glass {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, calc(var(--tint-a) * var(--tint))),
+    rgba(255, 255, 255, calc(var(--tint-b) * var(--tint)))
+  );
+  border: 1px solid var(--glass-edge);
+  box-shadow:
+    inset 1px 1px 0 var(--glass-rim),
+    inset -1px -1px 0 var(--glass-rim-low),
+    inset 0 0 24px var(--glass-glow),
+    var(--glass-shadow);
+  backdrop-filter: blur(var(--blur, 6px)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur, 6px)) saturate(180%);
+  transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+html.liquid .glass {
+  backdrop-filter: url(#liquid-glass) blur(var(--blur, 6px)) saturate(180%);
+  -webkit-backdrop-filter: url(#liquid-glass) blur(var(--blur, 6px)) saturate(180%);
+}
+
+/* Tweaks uses plain frosted blur even in Chromium */
+html.liquid .glass.glass-plain {
+  backdrop-filter: blur(var(--blur, 10px)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur, 10px)) saturate(180%);
+}
+
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--glass-sheen) 0%, transparent 48%);
+  pointer-events: none;
+}
+
+/* Species switcher bar & sliding overshoot thumb */
+.choices-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  --blur: 5px;
+  background-color: rgba(10, 12, 20, 0.56);
+  max-width: min(920px, calc(100vw - 32px));
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.choices-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.choices-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--thumb);
+  box-shadow: inset 0 1px 0 var(--glass-rim), 0 2px 8px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+  transition:
+    transform 0.35s cubic-bezier(0.3, 1.3, 0.5, 1),
+    width 0.35s cubic-bezier(0.3, 1.3, 0.5, 1),
+    height 0.35s cubic-bezier(0.3, 1.3, 0.5, 1);
+  z-index: 0;
+}
+
+.choice-btn {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 13px 0 11px;
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.3s ease;
+}
+
+.choice-btn:hover {
+  color: var(--text-soft);
+}
+
+.choice-btn[aria-checked="true"] {
+  color: var(--text);
+}
+
+@media (max-width: 920px) {
+  .choices-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 2px;
+    overflow: visible;
+    border-radius: 22px;
+  }
+}
+
+@media (max-width: 640px) {
+  .choices-bar {
+    max-width: calc(100vw - 24px);
+  }
+  .choices-thumb {
+    height: 30px;
+  }
+  .choice-btn {
+    height: 30px;
+    padding: 0 11px 0 9px;
+    gap: 6px;
+    font-size: 12.5px;
+  }
+}
+
+@media (max-width: 360px) {
+  .choice-btn {
+    padding: 0 8px 0 7px;
+    gap: 5px;
+    font-size: 12px;
+  }
+}
+
+/* Custom Range Slider for Tweaks Panel */
+.tweak-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 18px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tweak-range:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.tweak-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--accent) 0%,
+    var(--accent) var(--fill, 50%),
+    var(--chip-edge) var(--fill, 50%),
+    var(--chip-edge) 100%
+  );
+}
+
+.tweak-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  transition: transform 0.12s ease;
+}
+
+.tweak-range:hover::-webkit-slider-thumb {
+  transform: scale(1.08);
+}
+
+.tweak-range::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--accent) 0%,
+    var(--accent) var(--fill, 50%),
+    var(--chip-edge) var(--fill, 50%),
+    var(--chip-edge) 100%
+  );
+}
+
+.tweak-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+.hero-legibility {
+  text-shadow: 0 0 8px var(--bg), 0 0 28px var(--bg), 0 2px 16px rgba(6, 7, 12, 0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass,
+  .choices-thumb,
+  .choice-btn {
+    transition: none !important;
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Patchwork",
+  "description": "Downloadable AI skills for reverse-engineering video editing, pacing, motion graphics, and automated rendering across Gemini, Claude, and ChatGPT.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
